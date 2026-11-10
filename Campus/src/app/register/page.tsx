@@ -1,39 +1,69 @@
 "use client";
 
 import { useState } from "react";
+import type { FormEvent } from "react";
 import Link from "next/link";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { authErrorText } from "@/lib/auth-errors";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!supabase) return;
-    setBusy(true); setError(""); setMessage("");
-    const { error } = await supabase.auth.signUp({ email, password });
+    setError(null);
+    setInfo(null);
+    setBusy(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: name } },
+    });
     setBusy(false);
-    if (error) setError(error.message);
-    else setMessage("Аккаунт создан. Если в Supabase включено подтверждение почты, проверьте входящие письма.");
+    if (error) setError(authErrorText(error.message));
+    else if (data.session) router.replace("/dashboard/");
+    else setInfo("Готово! Подтверди email по ссылке в письме, затем войди.");
   }
 
-  return <main className="grid min-h-screen place-items-center p-5">
-    <form onSubmit={submit} className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-bold">Регистрация</h1>
-      <p className="mb-7 mt-2 text-sm text-slate-500">Создайте аккаунт студента Campus.</p>
-      {!isSupabaseConfigured && <p className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Сначала заполните переменные Supabase в .env.local.</p>}
-      <label className="mb-2 block text-sm font-medium">Электронная почта</label>
-      <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="mb-4 w-full rounded-xl border border-slate-200 px-4 py-3" />
-      <label className="mb-2 block text-sm font-medium">Пароль (не менее 8 символов)</label>
-      <input required minLength={8} type="password" value={password} onChange={e => setPassword(e.target.value)} className="mb-5 w-full rounded-xl border border-slate-200 px-4 py-3" />
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      {message && <p className="mb-4 text-sm text-green-700">{message}</p>}
-      <button disabled={busy || !isSupabaseConfigured} className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Создаём…" : "Создать аккаунт"}</button>
-      <p className="mt-5 text-center text-sm text-slate-500">Уже зарегистрированы? <Link className="font-semibold text-blue-600" href="/login/">Войти</Link></p>
-    </form>
-  </main>;
+  return (
+    <main className="grid min-h-screen place-items-center p-6">
+      <form onSubmit={onSubmit} className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="mb-6 grid h-12 w-12 place-items-center rounded-2xl bg-blue-600 text-xl font-bold text-white">C</div>
+        <h1 className="text-2xl font-bold">Регистрация</h1>
+        <p className="mt-1 text-slate-500">Создай аккаунт студента</p>
+
+        <label className="mt-6 block text-sm font-medium">Имя</label>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3" placeholder="Иван" />
+
+        <label className="mt-4 block text-sm font-medium">Email</label>
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3" placeholder="you@example.com" />
+
+        <label className="mt-4 block text-sm font-medium">Пароль</label>
+        <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3" placeholder="Минимум 6 символов" />
+
+        {error && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+        {info && <p className="mt-4 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">{info}</p>}
+
+        <button type="submit" disabled={busy}
+          className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white disabled:opacity-60">
+          {busy ? "Создаём…" : "Зарегистрироваться"}
+        </button>
+
+        <p className="mt-4 text-center text-sm text-slate-500">
+          Уже есть аккаунт?{" "}
+          <Link href="/login/" className="font-semibold text-blue-600">Войти</Link>
+        </p>
+      </form>
+    </main>
+  );
 }

@@ -1,4 +1,15 @@
-import { PortalShell } from "@/components/portal-shell";
+"use client";
+import { AppShell } from "@/components/app-shell";
+
 export default function AssignmentsPage() {
-  return <PortalShell><h1 className="text-3xl font-bold">Задания</h1><p className="mt-2 text-slate-500">Здесь будут задания, сроки и статусы выполнения.</p><div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500">Активных заданий пока нет.</div></PortalShell>;
+  return (
+    <AppShell>
+      <div className="mx-auto max-w-3xl">
+        <h1 className="text-2xl font-bold">Задания</h1>
+        <p className="mt-4 rounded-2xl border border-slate-200 bg-white p-6 text-slate-500">
+          Домашние задания появятся позже.
+        </p>
+      </div>
+    </AppShell>
+  );
 }

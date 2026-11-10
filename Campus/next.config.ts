@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const repoName = "Campus";
-const basePath = isGitHubPages ? `/${repoName}` : "";
+const basePath = isGitHubPages ? "/asmu" : "";
 
 const nextConfig: NextConfig = {
   output: "export",

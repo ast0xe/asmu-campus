@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
   --background: #f5f6f8;
@@ -7,6 +9,15 @@
   --muted: #687386;
   --line: #e6e9ef;
   --brand: #315efb;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0f141d;
+  --foreground: #8696b5;
+  --muted: #9aa4b5;
+  --line: #262f40;
+  --brand: #5b7cff;
 }
 
 * { box-sizing: border-box; }
